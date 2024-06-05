@@ -1,0 +1,12 @@
+## IDE and editor files.
+.idea/
+.vscode/
+.cache/
+
+## Build files.
+/out/
+/unix-7-file-importer
+/unix-7-file-importer.exe
+
+## Valgrind.
+callgrind.out.*
