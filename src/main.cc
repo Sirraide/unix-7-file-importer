@@ -46,10 +46,8 @@ auto HexVal(int c) -> int {
 auto Unhexify(std::string_view in) -> std::string {
     std::string data;
     if ((in.size() & 1) != 0) Error("Expected even amount of hex digits, got '{}' ({})", in, in.size());
-    for (auto chunk : in | vws::chunk(2)) {
-        std::println("a: {}, b: {}", int(HexVal(chunk[0])), int(HexVal(chunk[1])));
+    for (auto chunk : in | vws::chunk(2))
         data += char(HexVal(chunk[0]) << 4 | HexVal(chunk[1]));
-    }
     return data;
 }
 
