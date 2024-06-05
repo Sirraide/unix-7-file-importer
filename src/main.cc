@@ -56,7 +56,7 @@ auto Unhexify(std::string_view in) -> std::string {
 // SIZE NL
 // HEXDATA ...{NL}...
 void Unpack(std::string_view in, std::string_view pre) {
-    fs::path prefix{streams::stream{pre}.trim().text()};
+    const fs::path prefix{streams::stream{pre}.trim().text()};
     if (prefix.empty()) Error("Prefix may not be empty!");
     streams::stream s{in};
     while (not s.empty()) {
@@ -73,9 +73,12 @@ void Unpack(std::string_view in, std::string_view pre) {
         }
 
         if (filename.contains("..")) Error("Illegal '..' in path");
-        fs::create_directories((prefix / filename).remove_filename());
-        WriteFile(prefix / filename, data);
-        fs::permissions(prefix / filename, static_cast<fs::perms>(perm));
+        fs::path file = prefix;
+        file += '/';
+        file += filename;
+        fs::create_directories(auto{file}.remove_filename());
+        WriteFile(file, data);
+        fs::permissions(file, static_cast<fs::perms>(perm));
     }
 }
 
