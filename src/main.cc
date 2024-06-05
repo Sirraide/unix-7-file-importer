@@ -1,8 +1,8 @@
 #include <clopts.hh>
 #include <filesystem>
+#include <ranges>
 #include <stream/stream.hh>
 #include <utils.hh>
-#include <ranges>
 
 using FileHandle = std::unique_ptr<FILE, decltype(&std::fclose)>;
 
@@ -18,8 +18,8 @@ using options = clopts< // clang-format off
 >; // clang-format on
 }
 
-template <typename ...Args>
-[[noreturn]] void Error(std::format_string<Args...> fmt, Args&& ...args) {
+template <typename... Args>
+[[noreturn]] void Error(std::format_string<Args...> fmt, Args&&... args) {
     throw std::runtime_error(std::format(fmt, std::forward<Args>(args)...));
 }
 
@@ -53,7 +53,8 @@ auto Unhexify(std::string_view in) -> std::string {
 
 // PERM NL
 // FILENAME NL
-// HEXDATA ...
+// SIZE NL
+// HEXDATA ...{NL}...
 void Unpack(std::string_view in, std::string_view pre) {
     fs::path prefix{streams::stream{pre}.trim().text()};
     if (prefix.empty()) Error("Prefix may not be empty!");
@@ -61,7 +62,16 @@ void Unpack(std::string_view in, std::string_view pre) {
     while (not s.empty()) {
         auto perm = std::stoull(std::string{TakeLine(s)}, 0, 8);
         auto filename = TakeLine(s);
-        auto data = Unhexify(TakeLine(s));
+        auto size = std::stoll(std::string{TakeLine(s)}) * 2; // Two hex chars per byte.
+        std::string data;
+        while (size != 0) {
+            if (s.empty()) Error("Unexpected EOF");
+            auto line = TakeLine(s);
+            data += Unhexify(line);
+            size -= std::ssize(line);
+            if (size < 0) Error("Data size mismatch");
+        }
+
         if (filename.contains("..")) Error("Illegal '..' in path");
         fs::create_directories((prefix / filename).remove_filename());
         WriteFile(prefix / filename, data);
