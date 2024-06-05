@@ -53,7 +53,6 @@ auto Unhexify(std::string_view in) -> std::string {
 
 // PERM NL
 // FILENAME NL
-// SIZE NL
 // HEXDATA ...
 void Unpack(std::string_view in, std::string_view pre) {
     fs::path prefix{streams::stream{pre}.trim().text()};
